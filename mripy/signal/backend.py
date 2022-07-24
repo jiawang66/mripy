@@ -160,7 +160,7 @@ def to_device(input, device=cpu_device):
         device (int or Device or cupy.Device): Output device.
 
     Returns:
-        array: Output array placed in device.
+        ndarray: Output array placed in device.
     """
     idevice = get_device(input)
     odevice = Device(device)

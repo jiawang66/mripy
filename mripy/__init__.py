@@ -1,2 +1,2 @@
 
-__all__ = ['signal']
+__all__ = ['signal', 'mri']

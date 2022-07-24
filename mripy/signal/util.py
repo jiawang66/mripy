@@ -6,6 +6,7 @@
 import math
 import numpy as np
 from . import backend
+from skimage.util import montage
 
 
 def arr_center(shape):
@@ -42,6 +43,39 @@ def expand_shapes(*shapes):
                   for shape in shapes]
 
     return tuple(shapes_exp)
+
+
+def montageaxis(arr_in, fill='mean', rescale_intensity=False, grid_shape=None,
+                padding_width=0, multichannel=False, channel_axis=None):
+    """
+    Create a montage of several single- or multichannel images
+    with specific channel_axis
+
+    Args:
+        arr_in (ndarray): (K, M, N[, C]) ndarray,
+        an array representing an ensemble of `K` images of equal shape.
+        channel_axis (None or int): channel axis
+
+    See Also:
+        :func:`skimage.util.montage`
+    """
+    arr_in = backend.to_device(arr_in)  # move to cpu device
+
+    if channel_axis is not None:
+        ndim = arr_in.ndim
+        axis = normalize_axes((channel_axis,), ndim)[0]
+        axes = list(range(ndim))
+        axes.remove(axis)
+        axes.insert(0, axis)
+        arr_in = np.transpose(arr_in, axes=axes)
+
+    if arr_in.ndim == 2:
+        arr_in = np.expand_dims(arr_in, 0)
+
+    arr_out = montage(arr_in, fill=fill, rescale_intensity=rescale_intensity,
+                      grid_shape=grid_shape, padding_width=padding_width,
+                      multichannel=multichannel)
+    return arr_out
 
 
 def normalize_axes(axes, ndim):
