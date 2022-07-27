@@ -261,7 +261,7 @@ class Identity(Linop):
 class Multiply(Linop):
     """Multiplication linear operator.
 
-    Hadamard multiplication or array (support broadcasting)
+    Hadamard multiplication of array (support broadcasting)
 
     Args:
         ishape (list or tuple of ints): Input shape.

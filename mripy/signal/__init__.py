@@ -1,7 +1,7 @@
 
 
-from . import (fourier, linop, util)
+from . import (conv, fourier, linop, util)
 from .util import *  # noqa
 
 
-__all__ = ['fourier', 'linop', 'util']
+__all__ = ['conv', 'fourier', 'linop', 'util']
