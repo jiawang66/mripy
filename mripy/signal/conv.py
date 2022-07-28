@@ -5,6 +5,7 @@ Support N-dimension convolution with strides not equal to 1
 
 """
 
+import warnings
 import numpy as np
 import scipy.signal as signal
 from . import backend, util
@@ -59,8 +60,8 @@ def convolve(data, filt, mode='full', strides=None):
     if xp == np:
         output = _convolve(data, filt, mode=mode, strides=strides)
     else:
-        UserWarning('Currently not support convolution of cupy.ndarray. '
-                    'Try to transform it to numpy.ndarray.')
+        warnings.warn('Currently not support convolution of cupy.ndarray. '
+                      'Try to transform it to numpy.ndarray.')
         device = backend.get_device(data)
         data = backend.to_device(data)
         filt = backend.to_device(filt)
@@ -107,8 +108,8 @@ def convolve_data_adjoint(output, filt, data_shape, mode='full', strides=None):
         data = _convolve_data_adjoint(output, filt, data_shape,
                                       mode=mode, strides=strides)
     else:
-        UserWarning('Currently not support convolution of cupy.ndarray. '
-                    'Try to transform it to numpy.ndarray.')
+        warnings.warn('Currently not support convolution of cupy.ndarray. '
+                      'Try to transform it to numpy.ndarray.')
         device = backend.get_device(output)
         output = backend.to_device(output)
         filt = backend.to_device(filt)
@@ -156,8 +157,8 @@ def convolve_filt_adjoint(output, data, filt_shape, mode='full', strides=None):
         filt = _convolve_filt_adjoint(output, data, filt_shape,
                                       mode=mode, strides=strides)
     else:
-        UserWarning('Currently not support convolution of cupy.ndarray. '
-                    'Try to transform it to numpy.ndarray.')
+        warnings.warn('Currently not support convolution of cupy.ndarray. '
+                      'Try to transform it to numpy.ndarray.')
         device = backend.get_device(output)
         output = backend.to_device(output)
         data = backend.to_device(data)

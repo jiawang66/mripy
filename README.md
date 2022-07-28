@@ -27,21 +27,21 @@ A Python based signal processing and MRI reconstruction toolbox. It is built to 
 - [ ] ESPIRIT
 - [ ] ALOHA
 - [ ] ENLIVE
-
+- [ ] NIFTI class (interface to AntsImage and ScalarImage)
+- 
 `mripy/signal/`
 
-- [ ] Arbitrary-dimension slice operatiron of numpy array
-- [ ] convolution
+- [x] Arbitrary-dimension slice operatiron of numpy array
+- [x] convolution
 - [ ] convolution matrix
 - [ ] operators
-- [ ] FFT
+- [x] FFT
 - [ ] NUFFT
 - [ ] Spatial transformation
 - [ ] Spatial transformation of NIFTI
 - [ ] DICOM TO NIFTI
 - [ ] Wavelet
 - [ ] Finite difference
-- [ ] NIFTI class (interface to AntsImage and ScalarImage)
 - [ ] $\cdots$
 
 `test/`

@@ -26,7 +26,7 @@ def arr_center(shape):
 
     """
     check_shape_positive(shape)
-    return [math.ceil(i / 2) - 1 for i in shape]
+    return list([math.ceil(i / 2) - 1 for i in shape])
 
 
 def check_shape_positive(shape):
