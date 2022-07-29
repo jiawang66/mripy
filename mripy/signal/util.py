@@ -211,3 +211,69 @@ def resize(arr_in, oshape, ishift=None, oshift=None, constant_value=0):
     arr_out[oslice] = arr_in[islice]
 
     return arr_out.reshape(oshape)
+
+
+def to_list(a, order=None):
+    """
+    Convert array_like input to a list
+
+    Parameters
+    ----------
+    a : array_like
+        input data, in any form that can be converted to an array.
+    order : {'C', 'F'}, optional
+        'C' : row-major (C-style) (default)
+        'F' : column-major (Fortran-style)
+
+    Returns
+    -------
+    out : list
+
+    """
+    return list(vec(a, order=order))
+
+
+def to_tuple(a, order=None):
+    """
+    Convert array_like input to a tuple
+
+    Parameters
+    ----------
+    a : array_like
+        input data, in any form that can be converted to an array.
+    order : {'C', 'F'}, optional
+        'C' : row-major (C-style) (default)
+        'F' : column-major (Fortran-style)
+
+    Returns
+    -------
+    out : tuple
+
+    """
+    return tuple(vec(a, order=order))
+
+
+def vec(a, order=None, column=False):
+    """
+    Convert the input to a 1-D vector
+
+    Parameters
+    ----------
+    a : array_like
+        input data, in any form that can be converted to an array.
+    order : {'C', 'F'}, optional
+        'C' : row-major (C-style) (default)
+        'F' : column-major (Fortran-style)
+    column : bool
+        if true, return a column vector
+
+    Returns
+    -------
+    out : ndarray
+    """
+    b = np.asarray(a)
+
+    if column:
+        return b.reshape((-1, 1), order=order)
+    else:
+        return b.reshape(-1, order=order)

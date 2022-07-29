@@ -170,7 +170,7 @@ def convolve_filt_adjoint(output, data, filt_shape, mode='full', strides=None):
 
 
 def _convolve(data, filt, mode='full', strides=None):
-    s, p = _get_convolve_params(data.shape, filt.shape, mode, strides)
+    m, n, D, s, p = _get_convolve_params(data.shape, filt.shape, mode, strides)
     slc = tuple(slice(None, None, s_d) for s_d in s)
 
     output = signal.convolve(data, filt, mode=mode)[slc]
@@ -179,7 +179,7 @@ def _convolve(data, filt, mode='full', strides=None):
 
 def _convolve_data_adjoint(output, filt, data_shape,
                            mode='full', strides=None):
-    s, p = _get_convolve_params(data_shape, filt.shape, mode, strides)
+    m, n, D, s, p = _get_convolve_params(data_shape, filt.shape, mode, strides)
 
     # if stride > 1, zero-fill the output
     if not s == (1,) * len(s):
@@ -189,8 +189,8 @@ def _convolve_data_adjoint(output, filt, data_shape,
         output = output_fill
 
     # zero-padding of the even-size dimensions to be odd-size
-    filt_shape = tuple(k if k % 2 == 1 else k + 1 for k in filt.shape)
-    filt = util.resize(filt, filt_shape)
+    n = tuple(k if k % 2 == 1 else k + 1 for k in n)
+    filt = util.resize(filt, n)
 
     # reverse the filter
     filt = _reverse_and_conj(filt)
@@ -199,8 +199,7 @@ def _convolve_data_adjoint(output, filt, data_shape,
         adjoint_mode = 'valid'
 
         # zero pad the output to have `full` size
-        pad_shape = tuple([i + j - 1 for i, j in
-                           zip(data_shape, filt_shape)])
+        pad_shape = tuple([i + j - 1 for i, j in zip(m, n)])
         if not output.shape == pad_shape:
             # Pad on the left first.
             # That is, one more zero on the left than on the right
@@ -208,8 +207,7 @@ def _convolve_data_adjoint(output, filt, data_shape,
                         zip(pad_shape, output.shape)]
             num_right = [(i - j) // 2 for i, j in
                          zip(pad_shape, output.shape)]
-            dims = list(range(output.ndim))
-            output = util.crop_pad(output, dims=dims,
+            output = util.crop_pad(output, dims=list(range(D)),
                                    num_left=num_left,
                                    num_right=num_right)
     else:
@@ -221,7 +219,7 @@ def _convolve_data_adjoint(output, filt, data_shape,
 
 def _convolve_filt_adjoint(output, data, filt_shape,
                            mode='full', strides=None):
-    s, p = _get_convolve_params(data.shape, filt_shape, mode, strides)
+    m, n, D, s, p = _get_convolve_params(data.shape, filt_shape, mode, strides)
 
     # if stride > 1, zero-fill the output
     # and then set the strides = None
@@ -233,17 +231,17 @@ def _convolve_filt_adjoint(output, data, filt_shape,
         strides = None
 
     if mode == 'full' or mode == 'valid':
-        return _convolve_data_adjoint(output, data, filt_shape,
+        return _convolve_data_adjoint(output, data, n,
                                       mode=mode, strides=strides)
     elif mode == 'same':
         adjoint_mode = 'full'
         flag = [True if i % 2 == 1 and j % 2 == 0 else False
-                for i, j in zip(data.shape, filt_shape)]
+                for i, j in zip(m, n)]
         output_shape = [i + j - 1if f else i
-                        for i, j, f in zip(data.shape, filt_shape, flag)]
+                        for i, j, f in zip(m, n, flag)]
         output = util.resize(output, output_shape)
 
-        return _convolve_data_adjoint(output, data, filt_shape,
+        return _convolve_data_adjoint(output, data, n,
                                       mode=adjoint_mode, strides=strides)
     else:
         raise ValueError(f'Invalid mode, got {mode}')
@@ -253,8 +251,8 @@ def _get_convolve_params(data_shape, filt_shape, mode, strides):
     """
     Check the convolution params and return the strides.
     """
-    m = tuple(data_shape)
-    n = tuple(filt_shape)
+    m = util.to_tuple(data_shape)
+    n = util.to_tuple(filt_shape)
     D = len(m)
 
     if not len(m) == len(n):
@@ -285,7 +283,7 @@ def _get_convolve_params(data_shape, filt_shape, mode, strides):
     else:
         raise ValueError(f'Invalid mode, got {mode}')
 
-    return s, p
+    return m, n, D, s, p
 
 
 def _reverse_and_conj(x):
