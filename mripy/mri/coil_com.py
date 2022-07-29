@@ -4,8 +4,8 @@ Combine all channels of MRI
 
 """
 
-import mripy.signal as sig
 from . import util
+from ..signal import backend
 
 
 def sos(img, channel_axis=None):
@@ -24,7 +24,7 @@ def sos(img, channel_axis=None):
     """
     ndim = img.ndim
     shape = img.shape
-    xp = sig.backend.get_array_module(img)
+    xp = backend.get_array_module(img)
 
     channel_axis = util.get_channel_axis(channel_axis, ndim)
     output = xp.sum(xp.abs(img)**2, axis=channel_axis) / shape[channel_axis]

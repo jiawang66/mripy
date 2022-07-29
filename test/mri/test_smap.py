@@ -3,17 +3,19 @@
 Test sensitivity map function
 """
 
+import sys
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 
-import mripy.mri as mri
-import mripy.signal as sig
+sys.path.append('../../../mripy')
+from mripy.mri import coil_com, coil_smap
+from mripy.signal import fourier, util
 
 
 def display(arr, title='', cmap='gray', fill=0, grid_shape=None,
             channel_axis=None, axis_on_off='off'):
-    temp = sig.util.montageaxis(arr, fill=fill, grid_shape=grid_shape,
+    temp = util.montageaxis(arr, fill=fill, grid_shape=grid_shape,
                                 channel_axis=channel_axis)
 
     plt.figure(figsize=[8,5])
@@ -30,7 +32,7 @@ def main():
     print('done.')
 
     print('Reconstrunction by IFFT ...', end='')
-    img = sig.fourier.ifftn(kdata, axes=[0,1])
+    img = fourier.ifftn(kdata, axes=[0,1])
     print('done.')
 
     # Magnitude of img
@@ -42,12 +44,12 @@ def main():
     display(img_ph, title='Phase', grid_shape=[2, 4], channel_axis=2)
 
     print('Coil combination...', end='')
-    img_com = mri.coil_com.sos(img)
+    img_com = coil_com.sos(img)
     print('done.')
     display(img_com, title='Image combined by SOS', channel_axis=2)
 
     print('Compute coil sensitivity map...', end='')
-    smap = mri.coil_smap.smap(img, img_com, 2)
+    smap = coil_smap.smap(img, img_com, 2)
     print('done.')
     display(np.abs(smap), title='Smap', grid_shape=[2, 4], channel_axis=2)
 

@@ -3,12 +3,13 @@
 Test NIFTI
 """
 
+import sys
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 
-import mripy.mri as mri
-import mripy.signal as sig
+sys.path.append('../../../mripy')
+from mripy.mri import nifti
 
 
 def main():
@@ -18,7 +19,7 @@ def main():
     # affine[:3, -1] = [10, 20, -10]
     affine = None
     img = np.array(range(np.prod(xshape))).reshape(xshape)
-    nii = mri.nifti.make_nii(img, voxel_size=voxel_size, affine=affine)
+    nii = nifti.make_nii(img, voxel_size=voxel_size, affine=affine)
 
     nii.header.get_best_affine()
 

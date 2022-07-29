@@ -3,8 +3,11 @@
 Test convolution function
 """
 
+import sys
 import numpy as np
-import mripy.signal as sig
+
+sys.path.append('../../../mripy')
+from mripy.signal import conv
 
 
 EPS = 1e-16
@@ -30,16 +33,16 @@ def run_test(xshape, dshape, mode, strides=None):
     # d0 = np.array(range(np.prod(dshape))).reshape(dshape)
 
     # convolution
-    y0 = sig.conv.convolve(x0, d0, mode=mode, strides=strides)
+    y0 = conv.convolve(x0, d0, mode=mode, strides=strides)
     y1 = np.random.randn(*y0.shape)
     # y1 = y0[::-1]
 
     # convolve_data_adjoint
-    x1 = sig.conv.convolve_data_adjoint(y1, d0, xshape, mode=mode, strides=strides)
+    x1 = conv.convolve_data_adjoint(y1, d0, xshape, mode=mode, strides=strides)
     error(x0, y0, x1, y1)
 
     # convolve_filt_adjoint
-    d1 = sig.conv.convolve_filt_adjoint(y1, x0, dshape, mode=mode, strides=strides)
+    d1 = conv.convolve_filt_adjoint(y1, x0, dshape, mode=mode, strides=strides)
     error(d0, y0, d1, y1)
 
 

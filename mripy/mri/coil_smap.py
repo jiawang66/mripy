@@ -4,8 +4,8 @@ Compute soil sensituvity map
 
 """
 
-import mripy.signal as sig
 from . import coil_com, util
+from ..signal import backend
 
 
 def smap(img, img_com=None, channel_axis=None):
@@ -26,7 +26,7 @@ def smap(img, img_com=None, channel_axis=None):
     sensitivity_map : ndarray
     """
     ndim = img.ndim
-    xp = sig.backend.get_array_module(img)
+    xp = backend.get_array_module(img)
     channel_axis = util.get_channel_axis(channel_axis, ndim)
 
     if img_com is None:

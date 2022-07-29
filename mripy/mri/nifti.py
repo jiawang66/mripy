@@ -7,8 +7,7 @@ NIFTI image
 import os
 import nibabel as nib
 import numpy as np
-import mripy.signal as sig
-
+from ..signal import util as sig_util
 
 def load_nii(filename, **kwargs):
     """
@@ -68,7 +67,7 @@ def make_nii(img, voxel_size=None, affine=None, header=None):
         voxel_size = (1, ) * 3
 
     if voxel_size is not None:
-        voxel_size = sig.util.to_tuple(voxel_size)
+        voxel_size = sig_util.to_tuple(voxel_size)
         if len(voxel_size) > 3:
             raise ValueError(f'Length of voxel_size must be less than 4. '
                              f'Got {voxel_size}.')
@@ -121,8 +120,8 @@ def _new_affine(shape_old, affine_old, shape_new, voxel_size_new=None):
     affine_new : ndarray
         4 x 4 affine matrix
     """
-    shape_old = sig.util.to_tuple(shape_old)
-    shape_new = sig.util.to_tuple(shape_new)
+    shape_old = sig_util.to_tuple(shape_old)
+    shape_new = sig_util.to_tuple(shape_new)
 
     if shape_new == shape_old and voxel_size_new is None:
         return affine_old
@@ -132,10 +131,10 @@ def _new_affine(shape_old, affine_old, shape_new, voxel_size_new=None):
         voxel_size_new = np.array(shape_old) * voxel_size_old \
                          / np.array(shape_new)
 
-    voxel_size_new = sig.util.to_tuple(voxel_size_new)
+    voxel_size_new = sig_util.to_tuple(voxel_size_new)
 
-    _center = sig.util.arr_center
-    _vec = sig.util.vec
+    _center = sig_util.arr_center
+    _vec = sig_util.vec
 
     c_old = _center(shape_old)[:3]
     c_old = _vec(list(c_old) + [0, ] * (3 - len(c_old)), column=True)
