@@ -2,7 +2,10 @@
 Only for testing some ideas
 """
 
+import sys
 import numpy as np
+
+sys.path.append('../../mripy')
 import mripy.signal as sig
 
 

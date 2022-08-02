@@ -13,6 +13,8 @@ from skimage.util import montage
 def arr_center(shape):
     """Center of array
 
+    Return the subscript of the center, so plus 1 for the real center.
+
     center = ceil(shape / 2)
 
     Note that for even-size shape, the center is on the left side

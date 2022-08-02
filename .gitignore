@@ -134,3 +134,9 @@ dmypy.json
 # VSCode
 .vscode/
 
+# Folder
+results/
+
+# file
+*mgre.nii
+
