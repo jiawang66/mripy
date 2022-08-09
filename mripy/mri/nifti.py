@@ -5,7 +5,7 @@ NIFTI image
 """
 
 import os
-import math
+import platform
 import nibabel as nib
 import numpy as np
 from ..signal import util as sig_util
@@ -31,6 +31,24 @@ def save_nii(nii, filename):
 
     """
     nib.loadsave.save(nii, filename)
+
+
+def save_nii_quick(img, filename, header=None):
+    """
+    Save an image with a referenced nifti `header`
+
+    Parameters
+    ----------
+    img : ndarray
+        array image to save
+    filename : str
+        save filename
+    header : nibabel.Nifti1Header, optional
+        reference nifti header
+
+    """
+    nii = make_nii(img, header=header)
+    save_nii(nii, filename)
 
 
 def make_nii(img, voxel_size=None, affine=None, header=None):
@@ -188,8 +206,65 @@ def zoom(nii, shape_new=None, method=None):
     # TODO : interpolation
 
 
-def dcm2nii(path):
-    pass
+def dcm2niix(read_dir, write_dir=None):
+    """
+    interface to dcm2niix
+
+    using dcm2niix to converse DICOM TO NIFTI
+
+    Parameters
+    ----------
+    read_dir : str
+        read folder
+    write_dir : str, optional
+        write folder
+
+    """
+    if write_dir and not os.path.exists(write_dir):
+        os.makedirs(write_dir, exist_ok=True)
+    elif not write_dir:
+        write_dir = read_dir
+
+    if platform.system().lower() == 'linux':
+        path_exe = '../tools/dcm2niix_linux'
+    elif platform.system().lower() == 'windows':
+        path_exe = '../tools/dcm2niix_win.exe'
+    else:
+        raise SystemError('Unknown operating system.')
+
+    cmd = f"{path_exe} -p y -z n -o {write_dir} {read_dir}"
+
+    # subprocess.call(cmd)
+    # a = subprocess.run(cmd)
+    os.system(cmd)
+
+
+def dcm2niix_batch(read_dir, write_dir=None):
+    """
+    batch dcm2niix
+
+    using dcm2niix to converse DICOM TO NIFTI
+
+    Parameters
+    ----------
+    read_dir : str
+        read folder
+    write_dir : str, optional
+        write folder
+
+    """
+    if not write_dir:
+        write_dir = read_dir
+
+    subfolders = os.listdir(read_dir)
+    if not subfolders:
+        raise FileNotFoundError(f'Given read directory "{read_dir}" is empty.')
+
+    dcm_dirs = [os.path.join(read_dir, subfolders[n]) for n in range(len(subfolders))]
+    nii_dirs = [os.path.join(write_dir, subfolders[n]) for n in range(len(subfolders))]
+
+    for n in range(len(subfolders)):
+        dcm2niix(dcm_dirs[n], nii_dirs[n])
 
 
 def _new_affine(shape_old, affine_old, shape_new, voxel_size_new=None):
