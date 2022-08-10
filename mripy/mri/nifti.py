@@ -116,7 +116,7 @@ def make_nii(img, voxel_size=None, affine=None, header=None):
     return nii
 
 
-def crop_pad(nii, num_left=None, num_right=None, constant_value=0):
+def crop_pad(nii, num_left=None, num_right=None, cval=0):
     """
     Crop or pad the nii around center
 
@@ -125,7 +125,7 @@ def crop_pad(nii, num_left=None, num_right=None, constant_value=0):
     nii : ``SpatialImage``
     num_left : list or tuple, optional
     num_right : list or tuple, optional
-    constant_value : float, optional
+    cval : float, optional
 
     Returns
     -------
@@ -137,7 +137,7 @@ def crop_pad(nii, num_left=None, num_right=None, constant_value=0):
     dims = list(range(img.ndim))
     img_new = sig_util.crop_pad(img, dims, num_left=num_left,
                                 num_right=num_right,
-                                constant_value=constant_value)
+                                cval=cval)
     shape_new = img_new.shape
 
     affine_old = nii.affine
@@ -148,7 +148,7 @@ def crop_pad(nii, num_left=None, num_right=None, constant_value=0):
     return out
 
 
-def resize(nii, shape_new=None, constant_value=0):
+def resize(nii, shape_new=None, cval=0):
     """
     Resize the NifTi image with padding or cropping around center.
 
@@ -158,7 +158,7 @@ def resize(nii, shape_new=None, constant_value=0):
         NifTi to resize
     shape_new : list or tuple, optional
         the shape of new image
-    constant_value : float, optional
+    cval : float, optional
         The values to set the padded values for all axes.
 
     Returns
@@ -172,7 +172,7 @@ def resize(nii, shape_new=None, constant_value=0):
     affine_old = nii.affine
     voxel_size = nii.header._structarr['pixdim'][1:]
     affine_new = _new_affine(shape_old, affine_old, shape_new, voxel_size[:3])
-    img_new = sig_util.resize(img, shape_new, constant_value=constant_value)
+    img_new = sig_util.resize(img, shape_new, cval=cval)
 
     out = make_nii(img_new, voxel_size=voxel_size, affine=affine_new, header=nii.header)
     return out

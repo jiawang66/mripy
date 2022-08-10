@@ -30,7 +30,7 @@ def main():
         os.makedirs(path_save)
 
     yshape = tuple([round(j * 1.5) if i < 3 else j for i,j in enumerate(xshape)])
-    nii_2 = nifti.resize(nii_1, shape_new=yshape, constant_value=0)
+    nii_2 = nifti.resize(nii_1, shape_new=yshape, cval=0)
 
     nifti.save_nii(nii_1, path_save + 'nii_1.nii')
     nifti.save_nii(nii_2, path_save + 'nii_2.nii')

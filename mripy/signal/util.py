@@ -5,6 +5,7 @@
 
 import math
 import numpy as np
+import warnings
 from collections import Iterable
 from . import backend
 from skimage.util import montage
@@ -31,18 +32,83 @@ def arr_center(shape):
     return list([math.ceil(i / 2) - 1 for i in shape])
 
 
-def check_shape_positive(shape):
+def check_shape_positive(shape, subject=None):
+    if subject is None:
+        subject = 'Shapes'
+
     if not isinstance(shape, tuple) and not isinstance(shape, list):
         shape = (shape, )
 
     if not all(s > 0 for s in shape):
-        raise ValueError(f'Shapes must be positive, got {shape}')
+        raise ValueError(f'{subject} must be positive, got {shape}')
 
     if not all(s % 1 == 0 for s in shape):
-        raise ValueError(f'Shapes must be integers, got {shape}')
+        raise ValueError(f'{subject} must be integers, got {shape}')
 
 
-def crop_pad(arr_in, dims, num_left=None, num_right=None, constant_value=0):
+def expand_shapes(*shapes):
+    shapes = [list(shape) for shape in shapes]
+    max_ndim = max(len(shape) for shape in shapes)
+    shapes_exp = [[1] * (max_ndim - len(shape)) + shape
+                  for shape in shapes]
+
+    return tuple(shapes_exp)
+
+
+def normalize_axes(axes, ndim):
+    if axes is None:
+        return tuple(range(ndim))
+    else:
+        return tuple(a % ndim for a in sorted(axes))
+
+
+def prod(shape):
+    """Computes product of shape.
+
+    Args:
+        shape (tuple or list): shape.
+
+    Returns:
+        Product.
+
+    """
+    return np.prod(shape, dtype=np.int64)
+
+
+def montageaxis(arr_in, channel_axis=None, fill='mean', rescale_intensity=False,
+                grid_shape=None, padding_width=0, multichannel=False):
+    """
+    Create a montage of several single- or multichannel images
+    with specific channel_axis
+
+    Args:
+        arr_in (ndarray): (K, M, N[, C]) ndarray,
+        an array representing an ensemble of `K` images of equal shape.
+        channel_axis (None or int): channel axis
+
+    See Also:
+        :func:`skimage.util.montage`
+    """
+    arr_in = backend.to_device(arr_in)  # move to cpu device
+
+    if channel_axis is not None and not arr_in.ndim == 2:
+        ndim = arr_in.ndim
+        axis = normalize_axes((channel_axis,), ndim)[0]
+        axes = list(range(ndim))
+        axes.remove(axis)
+        axes.insert(0, axis)
+        arr_in = np.transpose(arr_in, axes=axes)
+
+    if arr_in.ndim == 2:
+        arr_in = np.expand_dims(arr_in, 0)
+
+    arr_out = montage(arr_in, fill=fill, rescale_intensity=rescale_intensity,
+                      grid_shape=grid_shape, padding_width=padding_width,
+                      multichannel=multichannel)
+    return arr_out
+
+
+def crop_pad(arr_in, dims, num_left=None, num_right=None, cval=0):
     """
     Crop or pad an array
 
@@ -60,7 +126,7 @@ def crop_pad(arr_in, dims, num_left=None, num_right=None, constant_value=0):
         Length-N vector, the pixels crop or pad at right side:
         positive : pad,
         negative : crop.
-    constant_value : int or float or None
+    cval : int or float or None
         The value to set the padded values
 
     Returns
@@ -104,75 +170,13 @@ def crop_pad(arr_in, dims, num_left=None, num_right=None, constant_value=0):
     oslice = tuple([slice(start, end) for start, end in zip(ostart, oend)])
 
     xp = backend.get_array_module(arr_in)
-    arr_out = xp.ones(oshape, dtype=arr_in.dtype) * constant_value
+    arr_out = xp.ones(oshape, dtype=arr_in.dtype) * cval
     arr_out[oslice] = arr_in[islice]
 
     return arr_out
 
 
-def expand_shapes(*shapes):
-    shapes = [list(shape) for shape in shapes]
-    max_ndim = max(len(shape) for shape in shapes)
-    shapes_exp = [[1] * (max_ndim - len(shape)) + shape
-                  for shape in shapes]
-
-    return tuple(shapes_exp)
-
-
-def montageaxis(arr_in, channel_axis=None, fill='mean', rescale_intensity=False,
-                grid_shape=None, padding_width=0, multichannel=False):
-    """
-    Create a montage of several single- or multichannel images
-    with specific channel_axis
-
-    Args:
-        arr_in (ndarray): (K, M, N[, C]) ndarray,
-        an array representing an ensemble of `K` images of equal shape.
-        channel_axis (None or int): channel axis
-
-    See Also:
-        :func:`skimage.util.montage`
-    """
-    arr_in = backend.to_device(arr_in)  # move to cpu device
-
-    if channel_axis is not None and not arr_in.ndim == 2:
-        ndim = arr_in.ndim
-        axis = normalize_axes((channel_axis,), ndim)[0]
-        axes = list(range(ndim))
-        axes.remove(axis)
-        axes.insert(0, axis)
-        arr_in = np.transpose(arr_in, axes=axes)
-
-    if arr_in.ndim == 2:
-        arr_in = np.expand_dims(arr_in, 0)
-
-    arr_out = montage(arr_in, fill=fill, rescale_intensity=rescale_intensity,
-                      grid_shape=grid_shape, padding_width=padding_width,
-                      multichannel=multichannel)
-    return arr_out
-
-
-def normalize_axes(axes, ndim):
-    if axes is None:
-        return tuple(range(ndim))
-    else:
-        return tuple(a % ndim for a in sorted(axes))
-
-
-def prod(shape):
-    """Computes product of shape.
-
-    Args:
-        shape (tuple or list): shape.
-
-    Returns:
-        Product.
-
-    """
-    return np.prod(shape, dtype=np.int64)
-
-
-def resize(arr_in, oshape, ishift=None, oshift=None, constant_value=0):
+def resize(arr_in, oshape, ishift=None, oshift=None, cval=0):
     """Resize with padding or cropping around center.
 
     If want to zero-padding or cropping around center, then ishift and oshift should be None
@@ -208,11 +212,88 @@ def resize(arr_in, oshape, ishift=None, oshift=None, constant_value=0):
     oslice = tuple([slice(so, so + c) for so, c in zip(oshift, copy_shape)])
 
     xp = backend.get_array_module(arr_in)
-    arr_out = xp.ones(oshape1, dtype=arr_in.dtype) * constant_value
+    arr_out = xp.ones(oshape1, dtype=arr_in.dtype) * cval
     arr_in = arr_in.reshape(ishape1)
     arr_out[oslice] = arr_in[islice]
 
     return arr_out.reshape(oshape)
+
+
+def circshift(arr_in, shifts, axes=None):
+    """
+    Circular shift of `arr_in`
+
+    Parameters
+    ----------
+    arr_in : ndarray
+        input data
+    shifts : list or tuple of ints
+        shifts
+    axes : list or tuple of ints, optional
+        Axes to perform circshift operation
+
+    Returns
+    -------
+    ndarray
+
+    """
+    if axes is None:
+        axes = list(range(arr_in.ndim))
+
+    axes = to_tuple(axes)
+    shifts = to_tuple(shifts)
+    assert(len(axes) == len(shifts))
+    xp = backend.get_array_module(arr_in)
+
+    for shift, axis in zip(shifts, axes):
+        arr_in = xp.roll(arr_in, shift, axis=axis)
+
+    return arr_in
+
+
+def linshift(arr_in, shifts, axes=None, cval=0.0):
+    """
+    Linear shift of `arr_in`
+
+    Parameters
+    ----------
+    arr_in : ndarray
+        input data
+    shifts : list or tuple of ints
+        shifts
+    axes : list or tuple of ints, optional
+        Axes to perform circshift operation
+    cval : float
+        constant value to fill past edges of arr_in. Default 0.
+
+    Returns
+    -------
+    ndarray
+
+    """
+    if axes is None:
+        axes = list(range(arr_in.ndim))
+
+    axes = to_tuple(axes)
+    shifts = to_tuple(shifts)
+    assert (len(axes) == len(shifts))
+    xp = backend.get_array_module(arr_in)
+
+    if not xp == np:
+        warnings.warn('Currently not support convolution of cupy.ndarray. '
+                      'Try to transform it to numpy.ndarray.')
+        device = backend.get_device(arr_in)
+        arr_in = backend.to_device(arr_in)
+    else:
+        device = backend.cpu_device
+
+    for shift, axis in zip(shifts, axes):
+        arr_in = _linshift(arr_in, shift, axis, cval=cval)
+
+    if not xp == np:
+        arr_in = backend.to_device(arr_in, device)
+
+    return arr_in
 
 
 def to_list(a, order=None):
@@ -279,3 +360,31 @@ def vec(a, order=None, column=False):
         return b.reshape((-1, 1), order=order)
     else:
         return b.reshape(-1, order=order)
+
+
+def _linshift(arr_in, shift, axis, cval=0.0):
+    if shift % 1 != 0:
+        raise ValueError(f'Shift must be an integer, got {shift}.')
+
+    ndim = arr_in.ndim
+    if axis >= ndim:
+        raise ValueError(f'axis {axis} is out of bounds for array of dimension {ndim}.')
+
+    shape = arr_in.shape
+    istart, ostart = [0, ] * ndim, [0, ] * ndim
+    iend, oend = list(shape), list(shape)
+
+    if shift > 0:
+        iend[axis] = -shift
+        ostart[axis] = shift
+    elif shift < 0:
+        istart[axis] = -shift
+        oend[axis] = shift
+
+    islice = tuple([slice(start, end) for start, end in zip(istart, iend)])
+    oslice = tuple([slice(start, end) for start, end in zip(ostart, oend)])
+
+    arr_out = np.ones(shape, dtype=arr_in.dtype) * cval
+    arr_out[oslice] = arr_in[islice]
+
+    return arr_out
