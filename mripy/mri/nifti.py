@@ -9,6 +9,7 @@ import platform
 import nibabel as nib
 import numpy as np
 from ..signal import util as sig_util
+from ..signal import interp
 
 
 def load_nii(filename, **kwargs):
@@ -47,6 +48,7 @@ def save_nii_quick(img, filename, header=None):
         reference nifti header
 
     """
+    # TODO : voxel size
     nii = make_nii(img, header=header)
     save_nii(nii, filename)
 
@@ -178,7 +180,7 @@ def resize(nii, shape_new=None, cval=0):
     return out
 
 
-def zoom(nii, shape_new=None, method=None):
+def zoom(nii, shape_new=None, dtype=None):
     """
     Zoom the nifti.
 
@@ -203,7 +205,12 @@ def zoom(nii, shape_new=None, method=None):
     if shape_new == shape_old:
         return nii
 
-    # TODO : interpolation
+    affine_old = nii.affine
+    img_new = interp.zoom(nii.get_data(), shape_new, dtype=dtype)
+    affine_new = _new_affine(shape_old, affine_old, shape_new)
+    out = make_nii(img_new, affine=affine_new, header=nii.header)
+
+    return out
 
 
 def dcm2niix(read_dir, write_dir=None):

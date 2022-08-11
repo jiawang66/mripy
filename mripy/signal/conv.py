@@ -54,6 +54,7 @@ def conv(data, filt, mode='full', strides=None):
 
     See Also
     --------
+    cconv
     conv_data_adjoint
     conv_filt_adjoint
 
@@ -179,11 +180,21 @@ def cconv(data, filt, strides=None):
     Parameters
     ----------
     data : ndarray
+        First input
     filt : ndarray
+        Second input. Should be have the same number of dimensions as `data`.
     strides : list or tuple of ints, optional
+        Convolution strides of length of the number of dimension
 
     Returns
     -------
+    ndarray
+
+    See Also
+    --------
+    conv
+    cconv_data_adjoint
+    cconv_filt_adjoint
 
     """
     xp = backend.get_array_module(data)
@@ -209,9 +220,14 @@ def cconv_data_adjoint(output, filt, data_shape, strides=None):
     Parameters
     ----------
     output : ndarray
+        Fist input. An N-dimensional array containing a subset of the
+        discrete circular convolution of `data` with `filt`.
     filt : ndarray
-    data_shape
-    strides
+        Second input.
+    data_shape : list or tuple of ints
+        Shape of `data`
+    strides : list or tuple of ints, optional
+        Convolution strides of length of the number of dimension
 
     Returns
     -------
@@ -244,9 +260,14 @@ def cconv_filt_adjoint(output, data, filt_shape, strides=None):
     Parameters
     ----------
     output : ndarray
+        Fist input. An N-dimensional array containing a subset of the
+        discrete circular convolution of `data` with `filt`.
     data : ndarray
-    filt_shape
-    strides
+        Second input.
+    filt_shape : list or tuple of ints
+        Shape of `filt`
+    strides : list or tuple of ints, optional
+        Convolution strides of length of the number of dimension
 
     Returns
     -------
@@ -307,6 +328,7 @@ def convmtx(data, filt_shape, mode='full', strides=None):
 
     """
     pass  # TODO
+    raise NotImplementedError
 
 
 def _conv(data, filt, mode='full', strides=None):
