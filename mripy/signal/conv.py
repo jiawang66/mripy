@@ -12,7 +12,9 @@ import scipy.ndimage as ndimage
 from . import backend, util
 
 
-__all__ = ['conv', 'conv_data_adjoint', 'conv_filt_adjoint']
+__all__ = ['conv', 'conv_data_adjoint', 'conv_filt_adjoint',
+           'cconv', 'cconv_data_adjoint', 'cconv_filt_adjoint',
+           'convmtx']
 
 
 def conv(data, filt, mode='full', strides=None):
@@ -414,10 +416,28 @@ def _cconv_data_adjoint(output, filt, data_shape, strides=None):
 
 
 def _cconv_filt_adjoint(output, data, filt_shape, strides=None):
-    max_shape = [max(m_d, n_d) for m_d, n_d in zip(data.shape, filt_shape)]
-    output  = util.resize(output, max_shape)
-    data = util.resize(data, max_shape)
-    filt = _cconv_data_adjoint(output, data, max_shape, strides=strides)
+    data_shape = data.shape
+    if all([m_d >= n_d for m_d, n_d in zip(data_shape, filt_shape)]):
+        filt = _cconv_data_adjoint(output, data, data.shape, strides=strides)
+    else:
+        # if stride > 1, zero-fill the output
+        # and then set the strides = None
+        m, n, D, s, u = _get_cconv_params(data_shape, filt_shape, strides)
+        if not s == (1,) * len(s):
+            slc = tuple(slice(None, None, s_d) for s_d in s)
+            output_fill = np.zeros(m, dtype=output.dtype)
+            output_fill[slc] = output
+            output = output_fill
+            strides = None
+
+        # period pad the `data` and zero-pad the `output` among dimension
+        # in which data_shape < filt_shape
+        pad_shape = [m_d + n_d if m_d < n_d else m_d
+                     for m_d, n_d in zip(data_shape, filt_shape)]
+        output = util.resize(output, pad_shape)
+        data = util.period_pad(data, pad_shape)
+        filt = _cconv_data_adjoint(output, data, pad_shape, strides=strides)
+
     return util.resize(filt, filt_shape)
 
 

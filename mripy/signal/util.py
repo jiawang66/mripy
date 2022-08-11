@@ -219,6 +219,85 @@ def resize(arr_in, oshape, ishift=None, oshift=None, cval=0):
     return arr_out.reshape(oshape)
 
 
+def period_pad(arr_in, oshape):
+    """
+    Period pad the input array `arr_in`
+
+    if `arr_in` has shape `ishape`, and then if `oshape` larger
+    than `ishape` at one axis, crop the `arr_in` around center
+    among that axis.
+
+    Parameters
+    ----------
+    arr_in : ndarray
+        Input array
+    oshape : list or tuple of ints
+        Shape of output array
+
+    Returns
+    -------
+    ndarray
+
+    """
+    ishape1, oshape1 = expand_shapes(arr_in.shape, oshape)
+
+    if ishape1 == oshape1:
+        return arr_in.reshape(oshape)
+
+    # period repeat `arr_in`
+    reps = [np.ceil(o / i) for i, o in zip(ishape1, oshape1)]
+    arr_out = repeat(arr_in, reps)
+
+    # circular shift to maketain a same array center
+    ic = arr_center(ishape1)
+    oc = arr_center(arr_out.shape)
+    shifts = [o - i for i, o in zip(ic, oc)]
+    arr_out = circshift(arr_out, shifts)
+
+    return resize(arr_out, oshape1)
+
+
+def repeat(arr_in, repeats, axes=None):
+    """
+    Construct an array by repeating `arr_in` the number of times given by `repeats`.
+
+    Parameters
+    ----------
+    arr_in : ndarray
+        Input array to repeat
+    repeats : int or list or tuple of ints
+        The number of repetitions of `arr_in` along each axis
+    axes : int or list or tuple of ints, optional
+        The axis to perform repetition. With the same length as `repeats`.
+
+    Returns
+    -------
+    ndarray
+
+    """
+    repeats = to_tuple(repeats)
+    if axes is None:
+        axes = tuple(range(len(repeats)))
+    else:
+        axes = to_tuple(axes)
+
+    if repeats == (1, ) * len(repeats):
+        return arr_in
+
+    if len(repeats) != len(axes):
+        raise ValueError('Cannot determine repeating dimension.')
+
+    ndim = arr_in.ndim
+    reps = [1, ] * ndim
+    for repeat, axis in zip(repeats, axes):
+        if axis >= ndim or axis < 0:
+            raise ValueError(f'axis {axis} is out of bounds for array of dimension {ndim}.')
+        reps[axis] = int(repeat)
+
+    arr_out = np.tile(arr_in, reps)
+    return arr_out
+
+
 def circshift(arr_in, shifts, axes=None):
     """
     Circular shift of `arr_in`

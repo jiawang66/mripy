@@ -54,12 +54,8 @@ def run_test_cconv(xshape, dshape, strides=None):
 
     # convolution
     y0 = conv.cconv(x0, d0, strides=strides)
-    # y1 = np.random.randn(*y0.shape)
-    y1 = y0[::-1]
-
-    print('x0 = ', x0)
-    print('d0 = ', d0)
-    print('y0 = ', y0)
+    y1 = np.random.randn(*y0.shape)
+    # y1 = y0[::-1]
 
     # convolve_data_adjoint
     x1 = conv.cconv_data_adjoint(y1, d0, xshape, strides=strides)
@@ -98,9 +94,14 @@ def main():
 
 
     print('********** Test circular convolution **********')
-    xshape = (4, )
-    dshape = (5, )
-    strides = (1, )
+    xshape = (3, 3, 6, 4)
+    dshape = (5, 6, 3, 4)
+    strides = (1, 2, -2, -1)
+    run_test_cconv(xshape, dshape, strides)
+
+    xshape = (1, 4, 3, 4)
+    dshape = (4, 1, 3, 2)
+    strides = (1, 2, -2, -1)
     run_test_cconv(xshape, dshape, strides)
 
     print('********** End **********\n')
