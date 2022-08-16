@@ -3,11 +3,13 @@
 Test interpolation function
 """
 
+import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import misc
 
+os.chdir(os.path.dirname(__file__))
 sys.path.append('../../../mripy')
 from mripy.signal import interp
 

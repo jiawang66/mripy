@@ -3,9 +3,11 @@
 Test convolution function
 """
 
+import os
 import sys
 import numpy as np
 
+os.chdir(os.path.dirname(__file__))
 sys.path.append('../../../mripy')
 from mripy.signal import conv
 
@@ -108,4 +110,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -3,11 +3,13 @@
 Test sensitivity map function
 """
 
+import os
 import sys
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 
+os.chdir(os.path.dirname(__file__))
 sys.path.append('../../../mripy')
 from mripy.mri import coil_com, coil_smap
 from mripy.signal import fourier, util
