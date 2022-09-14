@@ -94,7 +94,6 @@ def main():
 
     print('********** End **********\n')
 
-
     print('********** Test circular convolution **********')
     xshape = (3, 3, 6, 4)
     dshape = (5, 6, 3, 4)
