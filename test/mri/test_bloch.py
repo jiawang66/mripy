@@ -354,18 +354,60 @@ def test_B_2d():
           'If you set ETL to 1, they should be the same.')
 
 
+def test_B_3a():
+    print('\n****** Gradient spoiled ******')
+
+    flip = np.pi / 3  # radians
+    T1 = 0.6  # second
+    T2 = 0.1  # second
+    TE = 0.002  # second
+    TR = 0.01  # second
+    df = 0  # Hz
+    phi = np.pi / 2  # radians
+    dt = 0.001  # second
+
+    Rflip = bloch.yrot(flip)
+    [Ate, Bte] = bloch.free_precess(TE, T1, T2, df)
+
+    ''' Steady state '''
+    print('Steadt state')
+    Mss = bloch.gess(flip, T1, T2, TE, TR, df, phi)
+    print('Mss', Mss.transpose())
+
+    ''' Steady state at TE '''
+    print('\nSteady state at TE')
+    Mte_1 = Ate @ Rflip @ Mss + Bte
+    print('Calculate Mss first')
+    print('Mte_1', Mte_1.transpose())
+
+    Mte_2 = bloch.gess_signal(flip, T1, T2, TE, TR, df, phi)
+    print('Direct calculation')
+    print('Mte_2', Mte_2.transpose())
+
+    ''' Average magnetization in one voxel '''
+    print('\nAverage steady state at TE of one voxel')
+    N = 200
+    phi = 4 * np.pi
+    Mte = bloch.gess_signal(flip, T1, T2, TE, TR, df, phi, N=N)
+    print('Mte', Mte.transpose())
+
+
+
 def main():
-    test_freeprecess()
+    # test_freeprecess()
+    #
+    # ''' Saturation recovery '''
+    # test_B_1a()
+    # test_B_1c()
+    # test_B_1e()
+    #
+    # ''' Spin-Echo sequence '''
+    # test_B_2a()
+    # test_B_2b()
+    # test_B_2d()
 
-    ''' Saturation recovery '''
-    test_B_1a()
-    test_B_1c()
-    test_B_1e()
-
-    ''' Spin-Echo sequence '''
-    test_B_2a()
-    test_B_2b()
-    test_B_2d()
+    ''' Gradient-spoiled sequence '''
+    test_B_3a()
 
 
 if __name__ == '__main__':

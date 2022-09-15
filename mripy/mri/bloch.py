@@ -448,3 +448,103 @@ def fse_signal(T1, T2, TE, TR, df=0.0, ETL=1):
         Mte[:, k:k+1] = M
 
     return Mss, Mte
+
+
+def ge(flip, T1, T2, TE, TR, df, phi):
+    """
+    Gradient echo at first TR.
+    T1, T2, TE, TR, dt in second.
+    df of off-resonance frequence in Hz.
+    phi is the phase twist at the end of the sequence in radians.
+
+    """
+    pass
+
+
+def gess(flip, T1, T2, TE, TR, df, phi):
+    """
+    Calculate the magnetization at steady state for
+    a gradient-spoiled sequence, given T1, T2, TR in second.
+    `df` is the resonant frequency in Hz.
+    phi is the phase twist at the end of the sequence in radians.
+
+    """
+    Rflip = yrot(flip)
+    [Atr, Btr] = free_precess(TR, T1, T2, df)
+
+    '''
+    To add the gradient spoiler twist, we just multiply Atr by
+    zrot(phi). (Dephasing)
+    '''
+    Atr = zrot(phi) @ Atr
+
+    '''
+    Let M1 be the magnetization just before the tip, then
+        M1 = Atr @ Rflip @ M1 + Btr
+    Solve for M1...
+    '''
+    Mss = np.linalg.pinv(np.eye(3) - Atr @ Rflip) @ Btr
+    return Mss
+
+
+def gess_signal(flip, T1, T2, TE, TR, df, phi, N=1):
+    """
+    Calculate the average steady state magnetization in one voxel
+    at TE for a gradient-spoiled sequence, given T1, T2, TR in second.
+    `df` is the resonant frequency in Hz.
+    phi is the phase twist across the voxel in radians.
+    N is the number of spins in one voxel.
+
+    """
+    M = np.zeros([3, N])
+    if N == 1:
+        p = [phi, ]
+    else:
+        p = (np.array(range(N)) / N - 0.5) * phi
+
+    for k in range(N):
+        Mte = _gess_signal(flip, T1, T2, TE, TR, df, p[k])
+        M[:, k:k + 1] = Mte
+
+    Mte_avg = np.mean(M, axis=1)
+    return Mte_avg
+
+
+def _gess_signal(flip, T1, T2, TE, TR, df, phi):
+    """
+    Calculate the steady state magnetization at TE for
+    a gradient-spoiled sequence, given T1, T2, TR in second.
+    `df` is the resonant frequency in Hz.
+    phi is the phase twist at the end of the sequence in radians.
+
+    """
+    Rflip = yrot(flip)
+    [Atr, Btr] = free_precess(TR - TE, T1, T2, df)
+    [Ate, Bte] = free_precess(TE, T1, T2, df)
+
+    '''
+    To add the gradient spoiler twist, we just multiply Atr by
+    zrot(phi). (Dephasing)
+    '''
+    Atr = zrot(phi) @ Atr
+
+    '''
+    Force the transverse magnetization to zero before excitation
+    '''
+    # Atr = ASP @ Atr
+
+    '''
+    Let M1 be the magnetization just before the tip.
+        M2 be at TE.
+    then,
+        M2 = Ate @ (Rflip @ M1) + Bte
+        M1 = Atr @ M2 + Btr
+        
+    Solve for M2...
+        M2 = Ate @ Rflip @ (Atr @ M2 + Btr) + Bte
+        (I - Ate @ Rflip @ Atr) @ M2 = Ate @ Rflip @ Btr + Bte
+    '''
+    left = np.eye(3) - Ate @ Rflip @ Atr
+    right = Ate @ Rflip @ Btr + Bte
+    Mte = np.linalg.pinv(left) @ right
+    return Mte
