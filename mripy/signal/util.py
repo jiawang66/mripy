@@ -59,7 +59,7 @@ def normalize_axes(axes, ndim):
     if axes is None:
         return tuple(range(ndim))
     else:
-        return tuple(a % ndim for a in sorted(axes))
+        return tuple(a % ndim for a in sorted(to_tuple(axes)))
 
 
 def prod(shape):

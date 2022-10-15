@@ -392,6 +392,46 @@ def test_B_3a():
     print('Mte', Mte.transpose())
 
 
+def test_B_4a():
+    print('\n****** Steady-state Free-Precession ******')
+
+    Nte = 5
+    Nf = 200
+    flip = np.pi / 3  # radians
+    T1 = 0.6  # second
+    T2 = 0.1  # second
+    TE = np.linspace(0, 10, Nte) * 0.001  # second
+    TR = 0.01  # second
+    df = np.linspace(-100, 100, Nf)  # Hz
+
+    sig = np.zeros([Nf, Nte], dtype=np.complex128)
+
+    for n in range(Nte):
+        for k in range(Nf):
+            Mte = bloch.ss_signal(flip, T1, T2, TE[n], TR, df[k]).reshape(-1)
+            sig[k, n] = Mte[0] + 1j * Mte[1]
+
+    ''' Plot the results '''
+    t = slice(0, Nte)
+    plt.subplot(2, 1, 1)
+    plt.plot(df, np.abs(sig[:, t]))
+    plt.ylabel('Magnitude')
+    plt.grid()
+    plt.axis([np.min(df), np.max(df), 0, np.max(np.abs(sig))])
+    plt.legend(['TE=0', 'TE=2.5', 'TE=5', 'TE=7.5', 'TE=10'])
+
+    plt.subplot(2, 1, 2)
+    plt.plot(df, np.angle(sig[:, t]))
+    plt.xlabel('Frequency (HZ)')
+    plt.ylabel('Phase (radians)')
+    plt.axis([np.min(df), np.max(df), -np.pi, np.pi])
+    plt.grid()
+    plt.show()
+
+
+def test_B_4b():
+    print('\n****** SS ******')
+
 
 def main():
     # test_freeprecess()
@@ -405,9 +445,12 @@ def main():
     # test_B_2a()
     # test_B_2b()
     # test_B_2d()
+    #
+    # ''' Gradient-spoiled sequence '''
+    # test_B_3a()
 
-    ''' Gradient-spoiled sequence '''
-    test_B_3a()
+    ''' Steady-state free-precession '''
+    test_B_4a()
 
 
 if __name__ == '__main__':
