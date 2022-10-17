@@ -8,7 +8,7 @@ from . import coil_com, util
 from ..signal import backend
 
 
-def smap(img, img_com=None, channel_axis=None):
+def smap(img, img_com=None, caxis=None):
     """
     Compute the sensitivity map based on SOS
 
@@ -18,7 +18,7 @@ def smap(img, img_com=None, channel_axis=None):
         multi-channel image
     img_com : None or ndarray
         image after coil combination
-    channel_axis : int
+    caxis : int
         channel axis, default the last dimension
 
     Returns
@@ -27,13 +27,13 @@ def smap(img, img_com=None, channel_axis=None):
     """
     ndim = img.ndim
     xp = backend.get_array_module(img)
-    channel_axis = util.get_channel_axis(channel_axis, ndim)
+    caxis = util.get_channel_axis(caxis, ndim)
 
     if img_com is None:
-        img_com = coil_com.sos(img, channel_axis=channel_axis)
+        img_com = coil_com.sos(img, caxis=caxis)
 
     if not img.ndim == img_com.ndim:
-        img_com = xp.expand_dims(img_com, channel_axis)
+        img_com = xp.expand_dims(img_com, caxis)
 
     indices = img_com == 0
     img_com[indices] = 1

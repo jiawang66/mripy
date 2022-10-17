@@ -8,7 +8,7 @@ from . import util
 from ..signal import backend
 
 
-def sos(img, channel_axis=None):
+def sos(img, caxis=None):
     """
     Coil combination by SOS (Sum of Squares)
 
@@ -16,7 +16,7 @@ def sos(img, channel_axis=None):
     ----------
     img : ndarray
         multi-channel image, default the last dimension is channel
-    channel_axis : None or int
+    caxis : None or int
 
     Returns
     -------
@@ -26,6 +26,6 @@ def sos(img, channel_axis=None):
     shape = img.shape
     xp = backend.get_array_module(img)
 
-    channel_axis = util.get_channel_axis(channel_axis, ndim)
-    output = xp.sum(xp.abs(img)**2, axis=channel_axis) / shape[channel_axis]
+    caxis = util.get_channel_axis(caxis, ndim)
+    output = xp.sum(xp.abs(img)**2, axis=caxis) / shape[caxis]
     return xp.sqrt(output)

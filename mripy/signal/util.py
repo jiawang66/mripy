@@ -75,25 +75,25 @@ def prod(shape):
     return np.prod(shape, dtype=np.int64)
 
 
-def montageaxis(arr_in, channel_axis=None, fill='mean', rescale_intensity=False,
+def montageaxis(arr_in, caxis=None, fill='mean', rescale_intensity=False,
                 grid_shape=None, padding_width=0, multichannel=False):
     """
     Create a montage of several single- or multichannel images
-    with specific channel_axis
+    with specific caxis
 
     Args:
         arr_in (ndarray): (K, M, N[, C]) ndarray,
         an array representing an ensemble of `K` images of equal shape.
-        channel_axis (None or int): channel axis
+        caxis (None or int): channel axis
 
     See Also:
         :func:`skimage.util.montage`
     """
     arr_in = backend.to_device(arr_in)  # move to cpu device
 
-    if channel_axis is not None and not arr_in.ndim == 2:
+    if caxis is not None and not arr_in.ndim == 2:
         ndim = arr_in.ndim
-        axis = normalize_axes((channel_axis,), ndim)[0]
+        axis = normalize_axes((caxis,), ndim)[0]
         axes = list(range(ndim))
         axes.remove(axis)
         axes.insert(0, axis)
