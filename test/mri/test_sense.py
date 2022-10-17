@@ -38,7 +38,7 @@ def main():
     caxis = 2
     img_axes = [0, 1]
     ishape = kdata.shape
-    axis = 1  # acceleration axis
+    axis = 0  # acceleration axis
     rate = 4  # acceleration rate
 
     print(f'The acceleration axis is {axis}')
@@ -92,9 +92,12 @@ def main():
     display(img_wrapped_com, title='Wrapped image combined by SOS', caxis=caxis, padding_width=0)
 
     print('SENSE reconstruction...')
-    img_re = sense.sense_1d(kdata_samp, smap, rate=rate, axis=axis, caxis=caxis)
+    img_re, gfactor = sense.sense_1d(kdata_samp, smap, rate=rate, axis=axis, caxis=caxis)
     print('done.')
     display(np.abs(img_re), title='Mag of SENSE reconstruction', caxis=caxis, padding_width=0)
+    display(np.abs(gfactor), title='gfactor', caxis=caxis, padding_width=0)
+
+    print(np.max(np.abs(gfactor)))
 
 
 if __name__ == '__main__':
