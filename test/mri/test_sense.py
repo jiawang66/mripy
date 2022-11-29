@@ -34,11 +34,13 @@ def main():
     kdata = kdata['full_kspace_data']
     print('done.')
 
+    kdata = np.transpose(kdata, [2, 0, 1])
+
     # set simulation parameters
-    caxis = 2
-    img_axes = [0, 1]
+    caxis = 0
+    img_axes = [1, 2]
     ishape = kdata.shape
-    axis = 0  # acceleration axis
+    axis = 2  # acceleration axis
     rate = 4  # acceleration rate
 
     print(f'The acceleration axis is {axis}')
@@ -96,8 +98,6 @@ def main():
     print('done.')
     display(np.abs(img_re), title='Mag of SENSE reconstruction', caxis=caxis, padding_width=0)
     display(np.abs(gfactor), title='gfactor', caxis=caxis, padding_width=0)
-
-    print(np.max(np.abs(gfactor)))
 
 
 if __name__ == '__main__':

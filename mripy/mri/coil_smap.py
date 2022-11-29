@@ -25,9 +25,7 @@ def smap(img, img_com=None, caxis=None):
     -------
     sensitivity_map : ndarray
     """
-    ndim = img.ndim
     xp = backend.get_array_module(img)
-    caxis = util.get_channel_axis(caxis, ndim)
 
     if img_com is None:
         img_com = coil_com.sos(img, caxis=caxis)

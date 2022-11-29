@@ -5,46 +5,64 @@ A Python based signal processing and MRI reconstruction toolbox. It is built to 
 ## Directory
 
 - `data/`: testing data.
-- `mripy/mri/`: MRI reconstruction functions, e.g., parallel imaging, compressed sensing and machine-learning based reconstruction.
+- `mripy/mri/`: MRI reconstruction functions, e.g., parallel imaging, compressed sensing.
 - `mripy/signal/`: signal processing functions and linear operators.
 - `test/`: testing scripts
 
-## Plans
+## Development Plans
 
-`mripy/mri/`
-
-- [ ] SENSE
-- [ ] GRAPPA
-- [ ] coil combination with phase
-- [ ] CS (soft-threshold)
-- [ ] CS (CG, L1-norm)
-- [ ] Sensitivity map computation (fitting)
-- [ ] GSENSE
-- [ ] JSENSE
-- [ ] SPIRIT
-- [ ] SAKE
-- [ ] LORAKS
-- [ ] ESPIRIT
-- [ ] ALOHA
-- [ ] ENLIVE
-- [ ] NIFTI class (interface to AntsImage and ScalarImage)
-- 
-`mripy/signal/`
+### Signal processing functions
 
 - [x] Arbitrary-dimension slice operatiron of numpy array
-- [x] convolution
+- [x] convolution and its adjoint
+- [x] circular convolution and its adjoint
 - [ ] convolution matrix
-- [ ] operators
+- [x] operators
 - [x] FFT
 - [ ] NUFFT
-- [ ] Spatial transformation
-- [ ] Spatial transformation of NIFTI
-- [ ] DICOM TO NIFTI
+- [x] Spatial transformation
+- [x] Spatial transformation of NIFTI
+- [x] DICOM TO NIFTI
 - [ ] Wavelet
 - [ ] Finite difference
-- [ ] $\cdots$
 
-`test/`
+### MRI reconstruction functions
+
+#### SENSE
+
+- [x] SENSE
+- [ ] CG-SENSE
+- [ ] CS-SENSE
+- [ ] JSENSE
+
+#### GRAPPA
+
+- [ ] GRAPPA
+- [ ] SPIRIT
+- [ ] PRUNO
+
+#### Low rank
+
+- [ ] SAKE
+- [ ] LORAKS
+- [ ] ALOHA
+- [ ] ENLIVE
+
+#### Coil sensitivity map and coil combination
+
+- [x] SOS
+- [x] Adaptive combination
+- [ ] subspace based
+- [ ] ESPIRIT
+
+#### Compressive sensing
+
+- [ ] CS (soft-threshold)
+- [ ] CS (CG, L1-norm)
+
+#### NIFTI
+
+- [ ] NIFTI class (interface to AntsImage and ScalarImage)
 
 ## Requirements
 
